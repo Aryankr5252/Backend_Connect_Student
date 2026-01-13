@@ -7,16 +7,24 @@
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["college", "student", "connect", "marketplace", "lost-found"],
+  "keywords": [
+    "college",
+    "student",
+    "connect",
+    "marketplace",
+    "lost-found"
+  ],
   "author": "",
   "license": "ISC",
   "description": "College Student Connect & Utility Platform - Backend API",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.2",
+    "google-auth-library": "^10.5.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.1",
     "multer": "^1.4.5-lts.1"
   },
