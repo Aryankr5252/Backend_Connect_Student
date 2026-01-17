@@ -28,9 +28,13 @@ const marketplaceItemSchema = new mongoose.Schema(
       required: [true, 'Category is required'],
       enum: ['buy', 'sell'],
     },
-    image: {
+    imageUrl: {
       type: String,
-      default: '',
+      default: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+    },
+    contactNumber: {
+      type: String,
+      trim: true,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

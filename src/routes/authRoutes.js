@@ -8,7 +8,8 @@ const {
   login, 
   googleAuth, 
   verifyToken, 
-  logout 
+  logout,
+  updateProfile
 } = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -29,5 +30,8 @@ router.get('/verify', authMiddleware, verifyToken);
 
 // POST /api/auth/logout - Logout user
 router.post('/logout', logout);
+
+// PUT /api/auth/profile - Update user profile
+router.put('/profile', authMiddleware, updateProfile);
 
 module.exports = router;

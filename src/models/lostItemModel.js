@@ -32,6 +32,10 @@ const lostItemSchema = new mongoose.Schema(
       required: [true, 'Type is required'],
       enum: ['lost', 'found'],
     },
+    imageUrl: {
+      type: String,
+      default: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400',
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

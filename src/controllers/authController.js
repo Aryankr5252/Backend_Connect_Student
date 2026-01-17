@@ -262,6 +262,62 @@ const logout = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    const userId = req.user._id;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          success: false,
+          message: 'Email already in use',
+        });
+      }
+      user.email = email;
+    }
+
+    // Update name if provided
+    if (name) {
+      user.name = name;
+    }
+
+    // Save user
+    await user.save();
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(HTTP_STATUS.SERVER_ERROR).json({
+      success: false,
+      message: 'Failed to update profile',
+      error: error.message,
+    });
+  }
+};
+
 // Keep old register function for backwards compatibility
 const register = signup;
 
@@ -272,4 +328,5 @@ module.exports = {
   googleAuth,
   verifyToken,
   logout,
+  updateProfile,
 };

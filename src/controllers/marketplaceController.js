@@ -32,8 +32,11 @@ const createMarketplaceItem = async (req, res) => {
       });
     }
 
-    // Get image path if uploaded
-    const image = req.file ? req.file.path : '';
+    // Handle image upload
+    let imageUrl = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400'; // default image
+    if (req.file) {
+      imageUrl = `/uploads/${req.file.filename}`;
+    }
 
     const marketplaceItem = await MarketplaceItem.create({
       itemName,
@@ -41,7 +44,7 @@ const createMarketplaceItem = async (req, res) => {
       price,
       sellerName,
       category,
-      image,
+      imageUrl,
       createdBy: req.user._id,
     });
 
@@ -101,8 +104,136 @@ const getSellItems = async (req, res) => {
   }
 };
 
+// Get user's own marketplace items
+const getUserMarketplaceItems = async (req, res) => {
+  try {
+    const userItems = await MarketplaceItem.find({ createdBy: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      count: userItems.length,
+      data: userItems,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Error fetching user items',
+      error: error.message,
+    });
+  }
+};
+
+// Update a marketplace item
+const updateMarketplaceItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await MarketplaceItem.findById(id);
+
+    if (!item) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    // Check if user owns the item
+    if (item.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: 'You do not have permission to update this item',
+      });
+    }
+
+    const updatedItem = await MarketplaceItem.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Item updated successfully',
+      data: updatedItem,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Error updating item',
+      error: error.message,
+    });
+  }
+};
+
+// Delete a marketplace item
+const deleteMarketplaceItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await MarketplaceItem.findById(id);
+
+    if (!item) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    // Check if user owns the item
+    if (item.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        success: false,
+        message: 'You do not have permission to delete this item',
+      });
+    }
+
+    await MarketplaceItem.findByIdAndDelete(id);
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      message: 'Item deleted successfully',
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Error deleting item',
+      error: error.message,
+    });
+  }
+};
+
+// Get single marketplace item by ID
+const getMarketplaceItemById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const item = await MarketplaceItem.findById(id)
+      .populate('createdBy', 'name email');
+    
+    if (!item) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        success: false,
+        message: 'Item not found',
+      });
+    }
+
+    res.status(HTTP_STATUS.OK).json({
+      success: true,
+      data: item,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Error fetching item',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createMarketplaceItem,
   getBuyItems,
   getSellItems,
+  getUserMarketplaceItems,
+  updateMarketplaceItem,
+  deleteMarketplaceItem,
+  getMarketplaceItemById,
 };
